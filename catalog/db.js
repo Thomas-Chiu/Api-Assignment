@@ -11,29 +11,47 @@ mongoose.plugin(beautifyUnique)
 const catalogSchema = new Schema({ // 定義collection 欄位
   name: {
     type: String,
-    require: [true, 'required input'],
+    required: [true, 'required name input'],
     minlength: [1, 'at least one word'],
     maxlength: [10, 'ten words at most'],
     unique: 'repeated name'
   },
   price: {
     type: Number,
-    require: [true, 'required input']
+    minlength: [0, 'at least zero'],
+    required: [true, 'required price input']
   },
   description: {
     type: String,
-    require: [true, 'required input']
+    minlength: [2, 'at least two words'],
+    required: [true, 'required description input']
   },
   count: {
     type: Number,
-    require: [true, 'required input']
+    minlength: [0, 'at least zero'],
+    required: [true, 'required count input']
+  },
+  image: { // 新增上傳照片功能
+    type: String
+    // required: [true, 'required image input']
   }
 }, {
   versionKey: false
 })
 
-const catalog = mongoose.model('catalog', catalogSchema)
+const userSchema = new Schema({
+  account: {
+    type: String
+  },
+  password: {
+    type: String
+  }
+})
+
+const catalog = mongoose.model('catalogs', catalogSchema) // model(資料表名稱, 對應的資料表基模)
+const user = mongoose.model('users', userSchema)
 
 export default {
-  catalog
+  catalog,
+  user
 }
