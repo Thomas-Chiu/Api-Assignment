@@ -19,7 +19,7 @@ export default {
     product () {
       this.axios.get('http://localhost:3000/product')
         .then(res => {
-          console.log(res.data)
+          console.log(res.data.catalogs)
         })
     },
     login () {
@@ -31,17 +31,12 @@ export default {
           if (res.data.success) {
             alert('login success')
             this.$store.commit('login', res.data.account)
-            this.$router.push('./about')
+            this.$router.push('/about')
           } else {
-            alert(res.data.message)
+            alert(res.data.msg)
           }
         })
     }
   }
-  // mounted () {
-  //   this.axios.get('http://localhost:8080/product').then((response) => {
-  //     console.log(response.data)
-  //   })
-  // }
 }
 </script>

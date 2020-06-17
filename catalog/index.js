@@ -76,7 +76,7 @@ app.post('/new', async (req, res) => { // 新增資料
     req 進來的東西
     res 要出去的東西
     err 檔案上傳的錯誤
-    upload.single(欄位)(上傳完畢後的function)
+    upload.single(欄位)(req, res, 上傳完畢後的function)
    */
   upload.single('image')(req, res, async err => { // 處理錯誤訊息
     if (err instanceof multer.MulterError) { // 若是上傳發生錯誤
@@ -84,7 +84,7 @@ app.post('/new', async (req, res) => { // 新增資料
       res.status(400)
       res.send({
         success: false,
-        msg: msg
+        msg
       })
     } else if (err) { // 若不是上傳的錯誤
       res.status(500)
@@ -113,7 +113,7 @@ app.post('/new', async (req, res) => { // 新增資料
         res.status(400)
         res.send({
           success: false,
-          msg: msg
+          msg
         })
       }
     }
@@ -129,11 +129,12 @@ app.post('/login', async (req, res) => {
     })
     return
   }
-  try {
-    const result = db.users.find({
+  try { // 要記得await 不然會有問題
+    const result = await db.user.find({ // 為甚麼這邊user 不加s??
       account: req.body.account,
       password: req.body.password
     })
+    console.log(result)
     if (result.length > 0) {
       const account = result[0].account
       req.session.user = result[0]
@@ -159,82 +160,26 @@ app.post('/login', async (req, res) => {
   }
 })
 
-app.patch('/update/:type', async (req, res) => { // 修改資料
-  if (!req.headers['content-type'].includes('application/json')) {
-    res.status(400)
-    res.send({
-      success: false,
-      msg: 'unqualified format'
+app.get('/product', async (req, res) => {
+  if (req.session.user) { // sessions 是用來放登入狀態的collection
+    let catalogs = await db.catalog.find()
+    catalogs = catalogs.map(catalog => { // 在圖檔前面加上網址路徑
+      catalog.image = 'http://localhost:3000/image/' + catalog.image
+      return catalog
     })
-    return
-  }
-  if (req.params.type !== 'name' &&
-  req.params.type !== 'price' &&
-  req.params.type !== 'description' &&
-  req.params.type !== 'count') {
-    res.status(400)
-    res.send({
-      success: false,
-      msg: 'unqulified update type'
-    })
-    return
-  }
-  try {
-    const result = await db.catalog.findByIdAndUpdate(req.body.id, { [req.params.type]: req.body.data }, { new: true })
-    console.log(result)
     res.status(200)
     res.send({
       success: true,
-      msg: 'update done'
+      msg: 'get done',
+      catalogs
     })
-  } catch (err) {
-    res.status(500)
+  } else {
+    res.status(401)
     res.send({
       success: false,
-      msg: 'errors from server'
+      msg: 'Plz login'
     })
   }
-})
-
-app.delete('/delete', async (req, res) => { // 刪除資料
-  if (req.headers['content-type'] !== 'application/json') { // 拒絕不是json 格式的資料
-    res.status(400)
-    res.send({ success: false, msg: 'unqualified format' })
-    return
-  }
-  try {
-    const result = await db.catalog.findByIdAndDelete(req.body.id)
-    if (result === null) {
-      res.status(404)
-      res.send({
-        success: false,
-        msg: 'no item found'
-      })
-    } else {
-      res.status(200)
-      res.send({
-        success: true,
-        msg: 'delete done'
-      })
-    }
-  } catch (err) {
-    res.status(500)
-    res.send({ success: false, msg: 'errors from server' })
-  }
-})
-
-app.get('/product', async (req, res) => {
-  let products = await db.catalogs.find()
-  products = products.map(catalogs => { // 在圖檔前面加上網址路徑
-    catalogs.image = 'http://localhost:3000/image/' + catalogs.image
-    return catalogs
-  })
-  res.status(200)
-  res.send({
-    success: true,
-    msg: 'get done',
-    products
-  })
 })
 
 app.get('image/:file', async (req, res) => {

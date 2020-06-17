@@ -50,8 +50,10 @@ const userSchema = new Schema({
 
 const catalog = mongoose.model('catalogs', catalogSchema) // model(資料表名稱, 對應的資料表基模)
 const user = mongoose.model('users', userSchema)
+const connection = mongoose.connection
 
 export default {
   catalog,
-  user
+  user,
+  connection
 }
